@@ -1826,7 +1826,7 @@ impl<KC, DC> Database<KC, DC> {
     /// ```
     pub fn clear<T>(&self, txn: &mut RwTxn<T>) -> Result<()> {
         assert_eq!(self.env_ident, txn.txn.env.env_mut_ptr() as usize);
-        unsafe { mdb_result(ffi::mdb_drop(txn.txn.txn, self.dbi, 0)).map_err(Into::into) }
+        unsafe { mdb_result(ffi::mdb_drop(txn.txn.txn, self.dbi, false)).map_err(Into::into) }
     }
 
     /// Change the codec types of this uniform database, specifying the codecs.

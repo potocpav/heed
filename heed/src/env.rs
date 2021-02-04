@@ -170,7 +170,7 @@ impl EnvOpenOptions {
                             );
                             return Err(Error::Io(io::Error::new(io::ErrorKind::InvalidInput, msg)));
                         }
-                        mdb_result(ffi::mdb_env_set_mapsize(env, size))?;
+                        mdb_result(ffi::mdb_env_set_mapsize(env, size as isize))?;
                     }
 
                     if let Some(readers) = self.max_readers {
@@ -180,6 +180,7 @@ impl EnvOpenOptions {
                     if let Some(dbs) = self.max_dbs {
                         mdb_result(ffi::mdb_env_set_maxdbs(env, dbs))?;
                     }
+
 
                     // When the `sync-read-txn` feature is enabled, we must force LMDB
                     // to avoid using the thread local storage, this way we allow users
@@ -210,7 +211,7 @@ impl EnvOpenOptions {
                             Ok(env)
                         }
                         Err(e) => {
-                            ffi::mdb_env_close(env);
+                            ffi::mdb_env_close_ex(env, false);
                             Err(e.into())
                         }
                     }
@@ -246,7 +247,7 @@ impl Drop for EnvInner {
         match lock.remove(&self.path) {
             None => panic!("It seems another env closed this env before"),
             Some((_, signal_event)) => {
-                unsafe { let _ = ffi::mdb_env_close(self.env); }
+                unsafe { let _ = ffi::mdb_env_close_ex(self.env, false); }
                 // We signal to all the waiters that we have closed the env.
                 signal_event.signal();
             }
@@ -433,7 +434,7 @@ impl Env {
 
     #[cfg(all(feature = "mdbx", not(feature = "lmdb")))]
     pub fn force_sync(&self) -> Result<()> {
-        unsafe { mdb_result(ffi::mdb_env_sync(self.0.env))? }
+        unsafe { mdb_result(ffi::mdb_env_sync_ex(self.0.env, true, false))? }
 
         Ok(())
     }

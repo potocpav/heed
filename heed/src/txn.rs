@@ -17,11 +17,12 @@ impl<'e, T> RoTxn<'e, T> {
         let mut txn: *mut ffi::MDB_txn = ptr::null_mut();
 
         unsafe {
-            mdb_result(ffi::mdb_txn_begin(
+            mdb_result(ffi::mdb_txn_begin_ex(
                 env.env_mut_ptr(),
                 ptr::null_mut(),
                 ffi::MDB_RDONLY,
                 &mut txn,
+                ptr::null_mut(),
             ))?
         };
 
@@ -29,7 +30,7 @@ impl<'e, T> RoTxn<'e, T> {
     }
 
     pub fn commit(mut self) -> Result<()> {
-        let result = unsafe { mdb_result(ffi::mdb_txn_commit(self.txn)) };
+        let result = unsafe { mdb_result(ffi::mdb_txn_commit_ex(self.txn, ptr::null_mut())) };
         self.txn = ptr::null_mut();
         result.map_err(Into::into)
     }
@@ -78,11 +79,12 @@ impl<'e, T> RwTxn<'e, 'e, T> {
         let mut txn: *mut ffi::MDB_txn = ptr::null_mut();
 
         unsafe {
-            mdb_result(ffi::mdb_txn_begin(
+            mdb_result(ffi::mdb_txn_begin_ex(
                 env.env_mut_ptr(),
                 ptr::null_mut(),
                 0,
                 &mut txn,
+                ptr::null_mut(),
             ))?
         };
 
@@ -97,11 +99,12 @@ impl<'e, T> RwTxn<'e, 'e, T> {
         let parent_ptr: *mut ffi::MDB_txn = parent.txn.txn;
 
         unsafe {
-            mdb_result(ffi::mdb_txn_begin(
+            mdb_result(ffi::mdb_txn_begin_ex(
                 env.env_mut_ptr(),
                 parent_ptr,
                 0,
                 &mut txn,
+                ptr::null_mut(),
             ))?
         };
 

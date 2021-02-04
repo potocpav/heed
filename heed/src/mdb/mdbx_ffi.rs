@@ -12,14 +12,14 @@ pub use ffi::MDBX_CREATE as MDB_CREATE;
 pub use ffi::MDBX_CURRENT as MDB_CURRENT;
 pub use ffi::MDBX_RDONLY as MDB_RDONLY;
 
-pub use ffi::mdbx_env_close as mdb_env_close;
+pub use ffi::mdbx_env_close_ex as mdb_env_close_ex;
 pub use ffi::mdbx_env_copy2fd as mdb_env_copy2fd;
 pub use ffi::mdbx_env_create as mdb_env_create;
 pub use ffi::mdbx_env_open as mdb_env_open;
-pub use ffi::mdbx_env_set_mapsize as mdb_env_set_mapsize;
+pub use ffi::mdbx_env_set_geometry as mdb_env_set_geometry;
 pub use ffi::mdbx_env_set_maxdbs as mdb_env_set_maxdbs;
 pub use ffi::mdbx_env_set_maxreaders as mdb_env_set_maxreaders;
-pub use ffi::mdbx_env_sync as mdb_env_sync;
+pub use ffi::mdbx_env_sync_ex as mdb_env_sync_ex;
 
 pub use ffi::mdbx_dbi_open as mdb_dbi_open;
 pub use ffi::mdbx_dbi_sequence;
@@ -29,8 +29,8 @@ pub use ffi::mdbx_get as mdb_get;
 pub use ffi::mdbx_put as mdb_put;
 
 pub use ffi::mdbx_txn_abort as mdb_txn_abort;
-pub use ffi::mdbx_txn_begin as mdb_txn_begin;
-pub use ffi::mdbx_txn_commit as mdb_txn_commit;
+pub use ffi::mdbx_txn_begin_ex as mdb_txn_begin_ex;
+pub use ffi::mdbx_txn_commit_ex as mdb_txn_commit_ex;
 
 pub use ffi::mdbx_cursor_close as mdb_cursor_close;
 pub use ffi::mdbx_cursor_del as mdb_cursor_del;
@@ -38,7 +38,7 @@ pub use ffi::mdbx_cursor_get as mdb_cursor_get;
 pub use ffi::mdbx_cursor_open as mdb_cursor_open;
 pub use ffi::mdbx_cursor_put as mdb_cursor_put;
 
-pub use ffi::mdbx_env_stat as mdb_env_stat;
+// pub use ffi::mdbx_env_stat as mdb_env_stat;
 pub use ffi::mdbx_dbi_stat as mdb_stat;
 pub use ffi::MDBX_stat as MDB_Stat;
 
@@ -62,4 +62,16 @@ pub unsafe fn into_val(value: &[u8]) -> ffi::MDBX_val {
 
 pub unsafe fn from_val<'a>(value: ffi::MDBX_val) -> &'a [u8] {
     std::slice::from_raw_parts(value.iov_base as *const u8, value.iov_len)
+}
+
+pub unsafe fn mdb_env_set_mapsize(env: *mut ffi::MDBX_env, size: isize) -> ::libc::c_int {
+    ffi::mdbx_env_set_geometry(
+        env,
+        -1isize,
+        -1isize,
+        size,
+        -1isize,
+        -1isize,
+        -1isize,
+    )
 }
